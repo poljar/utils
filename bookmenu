@@ -1,0 +1,45 @@
+#!/bin/sh --
+# bookmenu - create a menu using calibredb
+
+# Copyright (c) 2017 Damir Jelić.
+# Distributed under the ISC licence.
+
+# requires calibredb jq rofi xdg-open
+
+getbooks() {
+    calibredb list --fields=title,formats --for-machine
+}
+
+readtitles() {
+    jq -r '.[] | .title'
+}
+
+readformats() {
+    jq -r --arg choice "$1" '.[] | select(.title == $choice) | .formats'
+}
+
+# get a single format, prefer pdf over the others
+filterformats() {
+    jq -r '(map(select(endswith("pdf"))) | .[]) // .[0]'
+}
+
+launchreader() {
+     # shellcheck disable=SC2039
+    local bookpath
+    read -r bookpath
+    xdg-open "$bookpath"
+}
+
+menu() {
+    rofi -dmenu -i -width 90 -location 2 -lines 20 -p "bookmenu:"
+}
+
+books=$(getbooks)
+
+choice=$(printf "%s" "$books" | readtitles | sort | menu)
+
+if [ -z "$choice" ]; then
+    exit -1
+fi
+
+printf "%s" "$books" | readformats "$choice" | filterformats | launchreader

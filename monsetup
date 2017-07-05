@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+disp=:1
+wallpaper="$HOME""/docs/pics/wall3.jpg"
+internal="LVDS-1"
+external="DP-2"
+external2="DP-1"
+
+connect() {
+    xrandr --display $disp --output $internal --auto --pos 2496x0 --scale 1x1 --output $external --auto --scale 1.25x1.25 --pos 0x0
+#    xrandr --display $disp --output $internal --auto
+#    xrandr --display $disp --output $external --left-of $internal --auto
+#    xrandr --display $disp --output $external2 --left-of $external --rotate left --auto
+}
+
+disconnect() {
+    xrandr --display $disp --output $external --off
+    xrandr --display $disp --output $external2 --off
+}
+
+autocheck() {
+    local status=$(xrandr --display $disp | awk -v port=$external '$1 ~ port {print $2}')
+
+    if [[ $status == "connected" ]]; then
+        connect
+    else
+        disconnect
+    fi
+}
+
+handle_dock_event() {
+    if [[ $1 == "docked" ]]; then
+        connect
+    elif [[ $1 == "undocked" ]]; then
+        sleep 1
+        disconnect
+    fi
+}
+
+if [[ "$#" -eq 0 ]]; then
+    autocheck
+elif [[ "$#" -eq 1 ]]; then
+    handle_dock_event $1
+fi
+
+DISPLAY=$disp feh --no-fehbg --bg-fill $wallpaper

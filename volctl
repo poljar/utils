@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+
+usage() {
+    echo "Usage: $0 up|down|mute"
+    exit 1
+}
+
+refresh_statusbar() {
+    killall -USR1 i3status
+}
+
+volctl() {
+    pactl set-sink-volume @DEFAULT_SINK@ $1
+    refresh_statusbar
+}
+up() {
+    volctl "+10%"
+}
+
+down() {
+    volctl "-10%"
+}
+
+mute() {
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    refres_statusbar
+}
+
+if [ $# -eq 0 ]; then
+    usage
+else
+    case $1 in
+        up)     up ;;
+        down)   down ;;
+        mute)   mute ;;
+        *)      usage ;;
+    esac
+fi
