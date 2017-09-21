@@ -24,7 +24,7 @@ filterformats() {
 }
 
 launchreader() {
-     # shellcheck disable=SC2039
+    # shellcheck disable=SC2039
     local bookpath
     read -r bookpath
     xdg-open "$bookpath"
