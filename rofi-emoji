@@ -1,5 +1,5 @@
 #!/bin/sh
-# rofi-emoij - create a menu for emoji selection
+# rofi-emoji - create a menu for emoji selection
 
 # Copyright (c) 2017 Damir Jelić.
 # Distributed under the ISC licence.
