@@ -1,0 +1,34 @@
+#!/bin/sh
+# rofi-emoij - create a menu for emoji selection
+
+# Copyright (c) 2017 Damir Jelić.
+# Distributed under the ISC licence.
+
+# requires jq rofi xdotool
+# A suitable emoji data file can be found at:
+# https://unpkg.com/emoji.json@5.0.0/emoji.json
+
+# POSIX sh with local
+# shellcheck disable=SC2039
+
+emojiFile="$XDG_DATA_HOME/emoji.json"
+
+getEmojiData() {
+    jq -r ".[] | [.char, .name] | @tsv"
+}
+
+menu() {
+    rofi -dmenu -i -width 90 -location 2 -lines 20 -p "emojimenu:"
+}
+
+typeIt() {
+    local emoji
+
+    while read -r emoji; do
+        if [ "$emoji" ]; then
+            xdotool type "$emoji"
+        fi
+    done
+}
+
+getEmojiData < "$emojiFile" | menu | cut -f 1 | typeIt
