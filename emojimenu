@@ -26,7 +26,7 @@ emoji_file = os.path.join(xdg_data_home, 'emoji.json')
 # load emoji definitions
 emojis = json.load(open(emoji_file))
 emojis = {e['name'] : e for e in emojis}
-emoji_names = "\n".join(e['name'] for e in emojis.values())
+emoji_names = "\n".join('{}\t{}'.format(e['char'], e['name']) for e in emojis.values())
 
 # display menu
 rofi_cmd = ['rofi', '-dmenu', '-i', '-lines', '20', '-p', 'emoji: ']
@@ -36,7 +36,7 @@ selection = subprocess.check_output(rofi_cmd,
 
 # strip newline
 selection = selection.rstrip()
-emoji = emojis[selection]['char']
+emoji = selection.split('\t')[0]
 
 # type emoji in focused window
 subprocess.call(['xdotool', 'type', emoji])
