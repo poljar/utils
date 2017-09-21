@@ -31,7 +31,7 @@ launchreader() {
 }
 
 menu() {
-    rofi -dmenu -i -width 90 -location 2 -lines 20 -p "bookmenu:"
+    rofi -dmenu -i -width 90 -location 2 -lines 20 -p "bookmenu: "
 }
 
 books=$(getbooks)
