@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # emojimenu - Display an emoji entry menu using rofi
 #
-# Functionally equivalent to rofi-emoji but uses python instead of jq and bash
+# Functionally equivalent to rofi-emoji but uses python instead of jq and sh
 
 # Copyright (c) 2017 Denis Kasak
 # Distributed under the ISC licence.
