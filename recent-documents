@@ -1,0 +1,40 @@
+#!/bin/sh
+# recent-documents - open a recently opened document (with zathura) using a rofi menu
+
+# Copyright (c) 2017 Denis Kasak
+# Distributed under the ISC licence.
+
+# requires rofi zathura
+
+if [ -z "$XDG_DATA_HOME" ]; then
+    XDG_DATA_HOME="$HOME/.local/share"
+fi
+
+recent_documents() {
+    grep -o "\[.*\]" "$XDG_DATA_HOME/zathura/history" | tr -d "[]"
+}
+
+filter_existing() {
+    # shellcheck disable=SC2039
+    local filename
+    while read -r filename; do
+        [ -e "$filename" ] && printf "%s\n" "$filename"
+    done
+}
+
+menu() {
+    rofi -dmenu -p "recent documents: "
+
+    # zenity-based alternative menu
+    #
+    # zenity --list --multiple --title="Previously opened documents" \
+    #        --column="Document" --width=800 --height=500 --separator="\n" \
+}
+
+choice="$(recent_documents | filter_existing | menu)"
+
+if [ -z "$choice" ]; then
+    exit -1
+fi
+
+zathura "$choice"
