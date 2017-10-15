@@ -9,7 +9,8 @@
 ARTICLE_STORE=~/docs/articles
 
 getarticles() {
-    find "$ARTICLE_STORE" -type f -not -path '*/.*' -printf '%f\0'
+    find "$ARTICLE_STORE" -type f -not -path '*/.*' -printf '%p\0' \
+        | xargs -0 -n1 realpath --relative-to="$ARTICLE_STORE"
 }
 
 launchreader() {
