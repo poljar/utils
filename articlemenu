@@ -1,0 +1,32 @@
+#!/bin/sh --
+# articlemenu
+
+# Copyright (c) 2017 Denis Kasak
+# Distributed under the ISC licence.
+
+# requires calibredb jq rofi xdg-open
+
+getarticles() {
+    find ~/docs/articles -type f -not -path '*/.*' -printf '%f\n'
+}
+
+launchreader() {
+    # shellcheck disable=SC2039
+    local bookpath
+    read -r bookpath
+    xdg-open "$bookpath"
+}
+
+menu() {
+    rofi -dmenu -i -lines 20 -p "articlemenu: "
+}
+
+articles=$(getarticles)
+
+choice=$(printf "%s" "$articles" | sort | menu)
+
+if [ -z "$choice" ]; then
+    exit -1
+fi
+
+printf "%s" "$choice" | launchreader
