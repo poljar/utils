@@ -9,8 +9,8 @@
 ARTICLE_STORE=~/docs/articles
 
 getarticles() {
-    find "$ARTICLE_STORE" -type f -not -path '*/.*' -printf '%p\0' \
-        | xargs -0 -n1 realpath --relative-to="$ARTICLE_STORE"
+    find "$ARTICLE_STORE" \( -type f -or -type l \) -and -not -path '*/.*' -printf '%p\0' \
+        | sed -ze "s|^$ARTICLE_STORE/||g"
 }
 
 launchreader() {
