@@ -6,24 +6,24 @@
 
 # requires calibredb jq rofi xdg-open
 
+ARTICLE_STORE=~/docs/articles
+
 getarticles() {
-    find ~/docs/articles -type f -not -path '*/.*' -printf '%f\n'
+    find "$ARTICLE_STORE" -type f -not -path '*/.*' -printf '%f\0'
 }
 
 launchreader() {
     # shellcheck disable=SC2039
-    local bookpath
-    read -r bookpath
-    xdg-open "$bookpath"
+    local article
+    read -r article
+    xdg-open "$ARTICLE_STORE/$article"
 }
 
 menu() {
     rofi -dmenu -i -lines 20 -p "articlemenu: "
 }
 
-articles=$(getarticles)
-
-choice=$(printf "%s" "$articles" | sort | menu)
+choice=$(getarticles | sort -z | sed -e 's/\x0/\n/g' | menu)
 
 if [ -z "$choice" ]; then
     exit -1
