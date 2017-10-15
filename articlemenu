@@ -9,8 +9,7 @@
 ARTICLE_STORE=~/docs/articles
 
 getarticles() {
-    find "$ARTICLE_STORE" \( -type f -or -type l \) -and -not -path '*/.*' -printf '%p\0' \
-        | sed -ze "s|^$ARTICLE_STORE/||g"
+    find "$ARTICLE_STORE" \( -type f -or -type l \) -and -not -path '*/.*' -printf '%P\0'
 }
 
 launchreader() {
