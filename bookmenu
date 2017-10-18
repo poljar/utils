@@ -34,12 +34,6 @@ menu() {
     rofi -dmenu -i -lines 20 -p "bookmenu: "
 }
 
-books=$(getbooks)
-
-choice=$(printf "%s" "$books" | readtitles | sort | menu)
-
-if [ -z "$choice" ]; then
-    exit -1
-fi
-
-printf "%s" "$books" | readformats "$choice" | filterformats | launchreader
+books=$(getbooks) &&
+    choice=$(printf "%s" "$books" | readtitles | sort | menu) &&
+    printf "%s" "$books" | readformats "$choice" | filterformats | launchreader
