@@ -9,7 +9,7 @@
 # requires python, rofi, xdotool
 #
 # Also requires an emoji definition file which can be found here:
-# https://unpkg.com/emoji.json@5.0.0/emoji.json
+# https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
 
 # INSTALL:
 #   1. mkdir -p "$XDG_DATA_HOME"
@@ -28,7 +28,7 @@ emoji_file = os.path.join(xdg_data_home, 'emoji.json')
 # load emoji definitions
 emojis = json.load(open(emoji_file))
 emojis = {e['name'] : e for e in emojis}
-emoji_names = "\n".join('{}\t{}'.format(e['char'], e['name']) for e in emojis.values())
+emoji_names = "\n".join('{}\t{}'.format(e['emoji'], e['description']) for e in emojis.values())
 
 # display menu
 rofi_cmd = ['rofi', '-dmenu', '-i', '-lines', '20', '-p', 'emoji: ']
