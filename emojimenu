@@ -27,8 +27,10 @@ emoji_file = os.path.join(xdg_data_home, 'emoji.json')
 
 # load emoji definitions
 emojis = json.load(open(emoji_file))
-emojis = {e['name'] : e for e in emojis}
-emoji_names = "\n".join('{}\t{}'.format(e['emoji'], e['description']) for e in emojis.values())
+emojis = {e['description']: e for e in emojis if 'description' in e}
+emoji_names = "\n".join('{}\t{}'.format(e['emoji'], e['description'])
+                        for e in emojis.values()
+                        if 'emoji' in e)
 
 # display menu
 rofi_cmd = ['rofi', '-dmenu', '-i', '-lines', '20', '-p', 'emoji: ']
