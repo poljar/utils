@@ -14,7 +14,7 @@
 emojiFile="$XDG_DATA_HOME/emoji.json"
 
 getEmojiData() {
-    jq -r '.[] | select(has("emoji")) | [.emoji, .description] | @tsv'
+    jq -r '.[] | select(has("emoji")) | [ "|" + .category + "|", .emoji, .description] | join(" ") | @text'
 }
 
 menu() {
@@ -31,4 +31,4 @@ typeIt() {
     done
 }
 
-getEmojiData < "$emojiFile" | menu | cut -f 1 | typeIt
+getEmojiData < "$emojiFile" | menu | cut -d' ' -f 2 | typeIt
