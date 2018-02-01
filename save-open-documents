@@ -1,0 +1,21 @@
+#!/bin/sh
+# save-open-documents - Save list of currently opened documents (based on
+# command line arguments of currently running processes).
+#
+# requires pgrep
+#
+# defaults to zathura as the document reader
+#
+# Copyright (c) 2017 Denis Kasak
+# Distributed under the ISC licence.
+
+document_reader=zathura
+document_file="${XDG_CACHE_HOME:-$HOME/.cache/}/saved_documents"
+document_file_backup="$document_file.old"
+
+[ -f "$document_file" ] && mv "$document_file" "$document_file_backup"
+
+pgrep -a "$document_reader" | \
+while read -r _ _ docpath; do
+    printf "%s\\n" "$docpath" >> "$document_file"
+done
