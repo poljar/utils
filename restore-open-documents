@@ -1,0 +1,14 @@
+#!/bin/sh
+# restore-open-documents - Re-open documents previously saved with save-open-documents.
+#
+# defaults to zathura as the document reader
+#
+# Copyright (c) 2017 Denis Kasak
+# Distributed under the ISC licence.
+
+document_reader=zathura
+document_file="${XDG_CACHE_HOME:-$HOME/.cache/}/saved_documents"
+
+while IFS= read -r docpath; do
+    nohup "$document_reader" "$docpath" >/dev/null &
+done <"$document_file"
