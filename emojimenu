@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # emojimenu - Display an emoji entry menu using rofi
 #
 # Functionally equivalent to rofi-emoji but uses python instead of jq and sh
