@@ -21,11 +21,17 @@ import os
 
 
 def emoji_menu_item(emoji_def):
-    category = emoji_def['category']
+    category = '{:>10}'.format('|' + emoji_def['category'] + '|')
     emoji = emoji_def['emoji']
     desc = emoji_def['description']
 
-    return f'|{category}| {emoji} {desc}'
+    if emoji_def['tags']:
+        tags = (tag for tag in emoji_def['tags'] if tag != desc)
+        formatted_tags = '[' + ', '.join(tags) + ']'
+    else:
+        formatted_tags = ''
+
+    return f'{category} {emoji} {desc} {formatted_tags}'
 
 
 xdg_data_home = os.getenv('XDG_DATA_HOME')
