@@ -54,7 +54,7 @@ selection = subprocess.check_output(rofi_cmd,
 
 # strip newline
 selection = selection.rstrip()
-emoji = selection.split(' ')[1]
+emoji = selection.split('|')[2].strip().split()[0]
 
 # type emoji in focused window
 subprocess.call(['xdotool', 'type', emoji])
