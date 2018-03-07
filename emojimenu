@@ -20,11 +20,12 @@ import subprocess
 import os
 
 
-def emoji_definition(emoji):
-    return '|{category}| {emoji} {desc}'.format(
-        emoji=emoji['emoji'],
-        category=emoji['category'],
-        desc=emoji['description'])
+def emoji_menu_item(emoji_def):
+    category = emoji_def['category']
+    emoji = emoji_def['emoji']
+    desc = emoji_def['description']
+
+    return f'|{category}| {emoji} {desc}'
 
 
 xdg_data_home = os.getenv('XDG_DATA_HOME')
@@ -35,15 +36,14 @@ emoji_file = os.path.join(xdg_data_home, 'emoji.json')
 
 # load emoji definitions
 emojis = json.load(open(emoji_file))
-emojis = {e['description']: e for e in emojis if 'description' in e}
-emoji_definitions = '\n'.join(emoji_definition(e)
-                              for e in emojis.values()
-                              if 'emoji' in e)
+emoji_menu_items = [emoji_menu_item(e) for e in emojis
+                    if 'description' in e
+                    if 'emoji' in e]
 
 # display menu
 rofi_cmd = ['rofi', '-dmenu', '-i', '-lines', '20', '-p', 'emoji: ']
 selection = subprocess.check_output(rofi_cmd,
-                                    input=emoji_definitions,
+                                    input='\n'.join(emoji_menu_items),
                                     encoding="utf-8")
 
 # strip newline
