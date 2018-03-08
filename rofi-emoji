@@ -19,7 +19,7 @@ getEmojiData() {
 }
 
 menu() {
-    rofi -dmenu -i -location 6 -lines 10 -p "emojimenu: "
+    rofi -dmenu -i -location 6 -lines 10 -p "emojimenu"
 }
 
 typeIt() {
