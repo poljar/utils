@@ -15,7 +15,15 @@ DEFAULT_DATA_HOME="$HOME/.local/share"
 emojiFile="${XDG_DATA_HOME:-$DEFAULT_DATA_HOME}/emoji.json"
 
 getEmojiData() {
-    jq -r '.[] | select(has("emoji")) | [ "|" + .category + "|", .emoji, .description] | join(" ") | @text'
+    jq -r '.[] | select(has("emoji"))
+               | [ "|" + .category + "|",
+                   .emoji,
+                   .description,
+                   if .tags | length > 0
+                     then "[" + (.tags | join(", ") | @text) + "]"
+                     else ""
+                   end ]
+               | join(" ") | @text'
 }
 
 menu() {
