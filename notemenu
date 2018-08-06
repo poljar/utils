@@ -1,0 +1,22 @@
+#!/bin/sh --
+# notemenu - Browse my t notes
+#
+# Copyright (c) 2017 Denis Kasak
+# Distributed under the ISC licence.
+
+# requires note (alias for t, pointing to a notes file)
+
+menu() {
+    rofi -dmenu -i -lines 20 -columns 1 -p "notemenu"
+}
+
+choice=$(note | menu)
+note_id="$(printf "%s\\n" "$choice" | awk '{ print $1 }')"
+
+if [ -n "$note_id" ]; then
+    note_text="$(note | grep -E "^$note_id")"
+    note_file="$(mktemp -t notemenu.XXXXXXXXXX)"
+    printf "%s\\n" "$note_text" > "$note_file"
+    "$TERMCMD" -e "\"$EDITOR\" \"$note_file\""
+    rm "$note_file"
+fi
