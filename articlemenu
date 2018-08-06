@@ -20,7 +20,7 @@ launchreader() {
 }
 
 menu() {
-    rofi -dmenu -i -lines 20 -p "articlemenu: "
+    rofi -dmenu -i -lines 20 -p "articlemenu"
 }
 
 choice=$(getarticles | sort -z | sed -e 's/\x0/\n/g' | menu)

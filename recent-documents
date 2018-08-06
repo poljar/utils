@@ -23,7 +23,7 @@ filter_existing() {
 }
 
 menu() {
-    rofi -dmenu -p "recent documents: "
+    rofi -dmenu -p "recent documents"
 
     # zenity-based alternative menu
     #
