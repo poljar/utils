@@ -5,16 +5,45 @@
 # Distributed under the ISC licence.
 
 # requires note (alias for t, pointing to a notes file)
+#
+# Configuration: set notes_path to where your notes are stored.
+
+notes_path="$HOME/docs/notes/notes"
 
 menu() {
     rofi -dmenu -i -lines 20 -columns 1 -p "notemenu"
+}
+
+show_note() {
+    local note_number
+    local full_note_number
+
+    note_number="$1"
+    full_note_number="$(sed -ne "s/.*id:\($note_number[a-zA-Z0-9]*\)$/\1/p" "$notes_path")"
+
+    note --verbose | \
+        awk "/^$full_note_number/ {
+                p=1
+                out=\$3
+                for (i=4; i <= NF; ++i) {
+                    out=out\" \"\$i
+                }
+                print out
+                next
+            }
+
+            /^[a-f0-9]{40}/ {
+                p=0
+            }
+
+            p"
 }
 
 choice=$(note | menu)
 note_id="$(printf "%s\\n" "$choice" | awk '{ print $1 }')"
 
 if [ -n "$note_id" ]; then
-    note_text="$(note | grep -E "^$note_id")"
+    note_text="$(show_note "$note_id")"
     note_file="$(mktemp -t notemenu.XXXXXXXXXX)"
     printf "%s\\n" "$note_text" > "$note_file"
     "$TERMCMD" -e "\"$EDITOR\" \"$note_file\""
