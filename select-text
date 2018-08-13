@@ -1,0 +1,8 @@
+#!/bin/sh
+# Starts a minimalistic (n)vim displaying stdin, for keyboard text selection.
+
+nvim -u NORC - +"set laststatus=0                | \
+                 set shortmess=I                 | \
+                 set fcs=eob:\\                  | \
+                 set guicursor=a:ver100-blinkon0 | \
+                 set noruler" -
