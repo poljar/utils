@@ -20,6 +20,25 @@ import subprocess
 import os
 
 
+# SETTINGS
+#
+# values:
+#   - method: type, paste
+#   - register: clipboard, primary
+#   - key: any key mnemonic accepted by xdotool
+
+paste_methods = {
+    "termite": {"method":   "type"},           # noqa
+    "kitty":   {"method":   "paste",           # noqa
+                "register": "primary",         # noqa
+                "key":      "Shift+Insert"},   # noqa
+}
+
+default_method = {"method": "paste",
+                  "register": "clipboard",
+                  "key": "Control+v"}
+
+
 def emoji_menu_item(emoji_def):
     category = '{:>10}'.format('|' + emoji_def['category'] + '|')
     emoji = emoji_def['emoji']
@@ -32,6 +51,26 @@ def emoji_menu_item(emoji_def):
         formatted_tags = ''
 
     return f'{category} {emoji} {desc} {formatted_tags}'
+
+
+def focused_window_classes():
+    # get the currently focused window class
+    window_id = subprocess.check_output(["xdotool", "getwindowfocus"])
+    classes = subprocess.check_output(["xprop", "-id", window_id, "WM_CLASS"],
+                                      encoding="utf-8")
+    classes = [c.strip('"')
+               for c in classes.split('=', 1)[1].strip().split(', ')]
+
+    return classes
+
+
+def determine_method(classes):
+    for c in classes:
+        method = paste_methods.get(c)
+        if method:
+            return method
+
+    return default_method
 
 
 xdg_data_home = os.getenv('XDG_DATA_HOME')
@@ -56,5 +95,24 @@ selection = subprocess.check_output(rofi_cmd,
 selection = selection.rstrip()
 emoji = selection.split('|')[2].strip().split()[0]
 
-# type emoji in focused window
-subprocess.call(['xdotool', 'type', emoji])
+paste_method = determine_method(focused_window_classes())
+
+if paste_method['method'] == 'type':
+    # type the emoji
+    subprocess.call(['xdotool', 'type', emoji])
+elif paste_method['method'] == 'paste':
+    register = paste_method.get('register', 'clipboard')
+    flag = '-b' if register == 'clipboard' else '-p'
+
+    # put the emoji into the clipboard, saving the current clipboard content
+    saved_clipboard = subprocess.check_output(['xsel', '-io', flag],
+                                              input=emoji,
+                                              encoding="utf-8")
+
+    # tell the program to paste
+    subprocess.call(['xdotool', 'key', paste_method['key']])
+
+    # restore the clipboard
+    subprocess.check_output(["xsel", "-i", flag],
+                            input=saved_clipboard,
+                            encoding="utf-8")
