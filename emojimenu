@@ -19,7 +19,6 @@ import json
 import subprocess
 import os
 
-
 # SETTINGS
 #
 # values:
@@ -86,10 +85,11 @@ emoji_menu_items = [emoji_menu_item(e) for e in emojis
                     if 'emoji' in e]
 
 # display menu
-rofi_cmd = ['rofi', '-dmenu', '-i', '-lines', '20', '-p', 'emoji']
+rofi_cmd = ['rofi', '-sync', '-dmenu', '-i', '-lines', '10', '-p', 'emoji']
 selection = subprocess.check_output(rofi_cmd,
                                     input='\n'.join(emoji_menu_items),
                                     encoding="utf-8")
+
 
 # strip newline
 selection = selection.rstrip()
