@@ -1,8 +1,32 @@
 #!/bin/sh
 # Starts a minimalistic (n)vim displaying stdin, for keyboard text selection.
 
-nvim -u NORC - +"set laststatus=0                | \
-                 set shortmess=I                 | \
-                 set fcs=eob:\\                  | \
-                 set guicursor=a:ver100-blinkon0 | \
-                 set noruler" -
+if [ "$EDITOR" != "nvim" ] && [ "$EDITOR" != "vim" ]; then
+    if type nvim; then
+        EDITOR="nvim"
+    elif type vim; then
+        EDITOR="vim"
+    else
+        echo "This script needs either nvim or vim."
+        exit 1
+    fi
+fi
+
+# Hide tildes in nvim since it has support for it, but do nothing for vim
+if [ "$EDITOR" = "nvim" ]; then
+    hide_tildes='set fcs=eob:\ '
+else
+    hide_tildes='echo'
+fi
+
+"$EDITOR" -u NORC \
++'set laststatus=0 |
+  set shortmess=I  |
+  set guicursor=a:ver100-blinkon0 |
+  set noruler' \
++"$hide_tildes" \
++'noremap y "+y' \
++'nnoremap j gj' \
++'nnoremap k gk' \
++'map Q :qa!<CR>' \
++'silent! ?^[^\s]? | nohl' "$@" -
