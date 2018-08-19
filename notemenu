@@ -1,28 +1,104 @@
 #!/bin/sh --
 # notemenu - Browse my t notes
 #
-# Copyright (c) 2017 Denis Kasak
+# Copyright (c) 2018 Denis Kasak
 # Distributed under the ISC licence.
 
-# requires note (alias for t, pointing to a notes file)
+# requires:
+#   * t with multiline entry support <thttps://github.com/dkasak/t>
+#   * note (wrapper for t to make it operate on your notes file)
+#   * xsel (for yanking)
+#   * pandoc (for Markdown to HTML conversion)
 #
-# Configuration: set notes_path to where your notes are stored.
+# Example note wrapper:
+#
+#     #!/bin/sh
+#     /usr/bin/t --task-dir ~/docs/notes --list notes "$@"
+#
+# Configuration:
+#
+# Set notes_path to where your notes are stored and the kb_* to your preferred
+# keyboard shortcuts.
+#
+# Ensure your TERMCMD and EDITOR variables are set or directly adjust
+# run_in_term below.
 
 notes_path="$HOME/docs/notes/notes"
 
+kb_new_note="Alt+n"
+kb_edit_note="Alt+e"
+kb_yank_note="Alt+y"
+kb_yank_append_note="Alt+Y"
+kb_html_note="Alt+p"
+
+# return codes; equal to X+9 if -kb-custom-X and 0 if enter
+action_show_note=0         # enter
+action_new_note=10         # custom-1
+action_edit_note=11        # custom-2
+action_yank_note=12        # custom-3
+action_yank_append_note=13 # custom-4
+action_html_note=14        # custom-5
+
+help_mesg="new: $kb_new_note | \
+edit: $kb_edit_note | \
+yank: $kb_yank_note | \
+yank (append): $kb_yank_append_note | \
+html: $kb_html_note"
+
+# Runs a command in a new terminal
+run_in_term() {
+    # "$TERMCMD" -e "$@"
+    /usr/bin/kitty -e "$@"
+}
+
+# Spawn the EDITOR in a new terminal
+spawn_editor() {
+    run_in_term "$EDITOR" "$@"
+}
+
+# Displays the note menu
 menu() {
-    rofi -dmenu -i -lines 20 -columns 1 -p "notemenu"
+    rofi -dmenu -i -lines 20 -columns 1 -p "notemenu"                           \
+         -mesg "$help_mesg"                                                     \
+         -kb-custom-"$(( action_new_note  - 9 ))" "$kb_new_note"                \
+         -kb-custom-"$(( action_edit_note - 9 ))" "$kb_edit_note"               \
+         -kb-custom-"$(( action_yank_note - 9 ))" "$kb_yank_note"               \
+         -kb-custom-"$(( action_yank_append_note - 9 ))" "$kb_yank_append_note" \
+         -kb-custom-"$(( action_html_note - 9 ))" "$kb_html_note"
+}
+
+# Gets the full note ID from the choice returned by menu()
+note_id_from_choice() {
+    local short_note_id
+
+    short_note_id="$(printf "%s\\n" "$1" | awk '{ print $1 }')"
+    sed -ne "s/.*id:\\(${short_note_id}[a-zA-Z0-9]*\\)$/\\1/p" "$notes_path"
+}
+
+# Copies the note with a given ID to a temporary file and returns its path
+instantiate_note() {
+    local note_id="$1"
+    local note_text
+    local note_file
+
+    note_text="$(show_note "$note_id")"
+    note_file="$(temp_file)"
+
+    printf "%s\\n" "$note_text" > "$note_file"
+    printf "%s\\n" "$note_file"
+}
+
+temp_file() {
+    mktemp -t notemenu.XXXXXXXXXX
 }
 
 show_note() {
-    local note_number
-    local full_note_number
+    local note_id="$1"
 
-    note_number="$1"
-    full_note_number="$(sed -ne "s/.*id:\($note_number[a-zA-Z0-9]*\)$/\1/p" "$notes_path")"
+    [ -z "$note_id" ] && return 1
 
     note --verbose | \
-        awk "/^$full_note_number/ {
+        awk "/^$note_id/ {
                 p=1
                 out=\$3
                 for (i=4; i <= NF; ++i) {
@@ -39,13 +115,73 @@ show_note() {
             p"
 }
 
-choice=$(note | menu)
-note_id="$(printf "%s\\n" "$choice" | awk '{ print $1 }')"
+while true; do
+    choice=$(note | menu)
+    action=$?
 
-if [ -n "$note_id" ]; then
-    note_text="$(show_note "$note_id")"
-    note_file="$(mktemp -t notemenu.XXXXXXXXXX)"
-    printf "%s\\n" "$note_text" > "$note_file"
-    "$TERMCMD" -e "\"$EDITOR\" \"$note_file\""
-    rm "$note_file"
-fi
+    case "$action" in
+        1)  # nothing was chosen
+            exit 1
+            ;;
+        "$action_new_note")
+            note_file="$(temp_file)"
+            spawn_editor "$note_file"
+
+            if [ -s "$note_file" ]; then
+                # user wrote something into the file
+                note "$(cat "$note_file")"
+            fi
+
+            rm "$note_file"
+
+            exit 0
+            ;;
+        "$action_show_note")
+            note_id="$(note_id_from_choice "$choice")"
+
+            if [ -n "$note_id" ]; then
+                rofi -e "$(show_note "$note_id")"
+            fi
+            ;;
+        "$action_edit_note")
+            note_id="$(note_id_from_choice "$choice")"
+
+            if [ -n "$note_id" ]; then
+                note_file="$(instantiate_note "$note_id")"
+                hash_file="$(temp_file)"
+                sha256sum "$note_file" >"$hash_file"
+                spawn_editor "$note_file"
+
+                if ! sha256sum -c "$hash_file" >/dev/null 2>&1; then
+                    # file changed
+                    note -e "$note_id" "$(cat "$note_file")"
+                fi
+
+                rm "$note_file" "$hash_file"
+            fi
+
+            exit 0
+            ;;
+        "$action_yank_note"|"$action_yank_append_note")
+            note_id="$(note_id_from_choice "$choice")"
+
+            if [ "$action" -eq "$action_yank_note" ]; then
+                show_note "$note_id" | xsel -ib
+            elif [ "$action" -eq "$action_yank_append_note" ]; then
+                show_note "$note_id" | xsel -iab
+            fi
+
+            exit 0
+            ;;
+        "$action_html_note")
+            note_id="$(note_id_from_choice "$choice")"
+            note_file="$(instantiate_note "$note_id")"
+            html_file="$(temp_file)"
+            pandoc -f markdown -t html -o "$html_file" "$note_file"
+            "$BROWSER" "$html_file"
+            rm "$note_file"
+
+            exit 0
+            ;;
+    esac
+done
