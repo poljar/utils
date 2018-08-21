@@ -23,10 +23,11 @@ fi
 +'set laststatus=0 |
   set shortmess=I  |
   set guicursor=a:ver100-blinkon0 |
-  set noruler' \
-+"$hide_tildes" \
-+'noremap y "+y' \
-+'nnoremap j gj' \
-+'nnoremap k gk' \
-+'map Q :qa!<CR>' \
+  set noruler'             \
++"$hide_tildes"            \
++'noremap y "+y'           \
++'nnoremap j gj'           \
++'nnoremap k gk'           \
++'nnoremap <C-c> :qa!<CR>' \
++'map Q :qa!<CR>'          \
 +'silent! ?^[^\s]? | nohl' "$@" -
