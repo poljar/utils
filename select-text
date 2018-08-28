@@ -29,5 +29,6 @@ fi
 +'nnoremap j gj'           \
 +'nnoremap k gk'           \
 +'nnoremap <C-c> :qa!<CR>' \
-+'map Q :qa!<CR>'          \
++'nnoremap q :qa!<CR>'     \
++'nnoremap Q :qa!<CR>'     \
 +'silent! ?^[^\s]? | nohl' "$@" -
