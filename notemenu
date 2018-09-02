@@ -30,6 +30,7 @@ kb_edit_note="Alt+e"
 kb_yank_note="Alt+y"
 kb_yank_append_note="Alt+Y"
 kb_html_note="Alt+p"
+kb_delete_note="Alt+x"
 
 # return codes; equal to X+9 if -kb-custom-X and 0 if enter
 action_show_note=0         # enter
@@ -38,12 +39,14 @@ action_edit_note=11        # custom-2
 action_yank_note=12        # custom-3
 action_yank_append_note=13 # custom-4
 action_html_note=14        # custom-5
+action_delete_note=15      # custom-6
 
 help_mesg="new: $kb_new_note | \
 edit: $kb_edit_note | \
 yank: $kb_yank_note | \
 yank (append): $kb_yank_append_note | \
-html: $kb_html_note"
+html: $kb_html_note | \
+delete: $kb_delete_note"
 
 # Runs a command in a new terminal
 run_in_term() {
@@ -64,7 +67,35 @@ menu() {
          -kb-custom-"$(( action_edit_note - 9 ))" "$kb_edit_note"               \
          -kb-custom-"$(( action_yank_note - 9 ))" "$kb_yank_note"               \
          -kb-custom-"$(( action_yank_append_note - 9 ))" "$kb_yank_append_note" \
-         -kb-custom-"$(( action_html_note - 9 ))" "$kb_html_note"
+         -kb-custom-"$(( action_html_note - 9 ))" "$kb_html_note"               \
+         -kb-custom-"$(( action_delete_note - 9 ))" "$kb_delete_note"
+}
+
+prompt_yesno() {
+    local message="$1"
+    local choice
+
+    choice="$(printf "no\\nyes" |
+              rofi -dmenu -i -lines 2 -p "notemenu" \
+                   -mesg "$(printf -- "%s" "$message")")"
+
+    if [ "$choice" = "y" ] || [ "$choice" = "Y" ] || [ "$choice" = "yes" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+prompt_deletion() {
+    local note_id="$1"
+    local mesg="$(show_note "$note_id";
+                  printf -- "--\\n\\n%s" \
+                            "Are you sure you want to delete note $note_id?")"
+
+    if prompt_yesno "$mesg"; then
+        rofi -e "Note $note_id deleted."
+        note -r "$note_id"
+    fi
 }
 
 # Gets the full note ID from the choice returned by menu()
@@ -181,6 +212,14 @@ while true; do
             "$BROWSER" "$html_file"
             rm "$note_file"
 
+            exit 0
+            ;;
+        "$action_delete_note")
+            note_id="$(note_id_from_choice "$choice")"
+
+            if [ -n "$note_id" ]; then
+                prompt_deletion "$note_id"
+            fi
             exit 0
             ;;
     esac
