@@ -31,6 +31,8 @@ kb_yank_note="Alt+y"
 kb_yank_append_note="Alt+Y"
 kb_html_note="Alt+p"
 kb_delete_note="Alt+x"
+kb_open_url="Alt+g"
+kb_yank_url="Alt+u"
 
 # return codes; equal to X+9 if -kb-custom-X and 0 if enter
 action_show_note=0         # enter
@@ -40,11 +42,15 @@ action_yank_note=12        # custom-3
 action_yank_append_note=13 # custom-4
 action_html_note=14        # custom-5
 action_delete_note=15      # custom-6
+action_open_url=16         # custom-7
+action_yank_url=17         # custom-8
 
 help_mesg="new: $kb_new_note | \
 edit: $kb_edit_note | \
 yank: $kb_yank_note | \
 yank (append): $kb_yank_append_note | \
+open url: $kb_open_url | \
+yank url: $kb_yank_url | \
 html: $kb_html_note | \
 delete: $kb_delete_note"
 
@@ -68,7 +74,9 @@ menu() {
          -kb-custom-"$(( action_yank_note - 9 ))" "$kb_yank_note"               \
          -kb-custom-"$(( action_yank_append_note - 9 ))" "$kb_yank_append_note" \
          -kb-custom-"$(( action_html_note - 9 ))" "$kb_html_note"               \
-         -kb-custom-"$(( action_delete_note - 9 ))" "$kb_delete_note"
+         -kb-custom-"$(( action_delete_note - 9 ))" "$kb_delete_note"           \
+         -kb-custom-"$(( action_open_url - 9 ))" "$kb_open_url" \
+         -kb-custom-"$(( action_yank_url - 9 ))" "$kb_yank_url"
 }
 
 prompt_yesno() {
@@ -146,6 +154,13 @@ show_note() {
             p"
 }
 
+get_url() {
+    local note_id="$1"
+    show_note "$note_id" | grep -Po "(?<=<)https?://.*(?=>)" \
+                         | tail -n 1                         \
+                         | tr -d '\n'
+}
+
 while true; do
     choice=$(note | menu)
     action=$?
@@ -220,6 +235,17 @@ while true; do
             if [ -n "$note_id" ]; then
                 prompt_deletion "$note_id"
             fi
+            exit 0
+            ;;
+        "$action_open_url")
+            note_id="$(note_id_from_choice "$choice")"
+            url="$(get_url "$note_id")"
+            mario "$url" url
+            exit 0
+            ;;
+        "$action_yank_url")
+            note_id="$(note_id_from_choice "$choice")"
+            get_url "$note_id" | xsel -ib
             exit 0
             ;;
     esac
