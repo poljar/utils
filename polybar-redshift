@@ -1,0 +1,90 @@
+#!/bin/sh
+# polybar-redshift
+#
+# Copyright (c) 2018 Denis Kasak
+# Distributed under the ISC licence.
+#
+# Starts and manages a redshift instance and outputs a status message based on
+# its state. Toggles the redshift instance on signal USR1.
+#
+# By default, the status message is a Font Awesome light bulb, filled out
+# (codepoint f834) when redshift is turned on and hollow (codepoint f835) when
+# off. It's also wrapped in polybar/lemonbar colour codes based on redshift's
+# current temperature.
+#
+# Inspired by
+# https://github.com/x70b1/polybar-scripts/tree/master/polybar-scripts/info-redshift-temp
+#
+# requires: redshift
+# optional: polybar
+
+### CONFIG
+redshift_off=""
+redshift_on=""
+
+colorize="on"
+color1="#65737E"
+color2="#83a598"
+color3="#EBCB8B"
+color4="#D08770"
+###
+
+
+state="on"
+
+# XXX: We can't query redshift for its current state, so the only way to ensure
+#      we're tracking the state correctly is to kill any present instances and
+#      start our own.
+pkill -x -9 redshift
+redshift -x
+redshift &
+
+toggle() {
+    if [ "$state" = "on" ]; then
+        state="off"
+    else
+        state="on"
+    fi
+
+    print_bulb
+
+    pkill -x -USR1 redshift
+
+    # XXX: Disallow fast toggling, lest there are any
+    #      race conditions.
+    sleep 1
+}
+
+trap toggle USR1
+
+print_bulb() {
+    if [ "$state" = "off" ]; then
+        bulb="$redshift_off"
+    else
+        bulb="$redshift_on"
+    fi
+
+    if [ "$colorize" != "on" ]; then
+        printf '%s\n' "$bulb"
+    elif [ -z "$temp" ] || [ "$state" = "off" ]; then
+        printf '%s\n' "%{F$color1}$bulb%{F-}"
+    elif [ "$temp" -ge 5000 ]; then
+        printf '%s\n' "%{F$color2}$bulb%{F-}"
+    elif [ "$temp" -ge 4000 ]; then
+        printf '%s\n' "%{F$color3}$bulb%{F-}"
+    else
+        printf '%s\n' "%{F$color4}$bulb%{F-}"
+    fi
+}
+
+while true; do
+    if pgrep -x redshift; then
+        temp=$(redshift -p 2>/dev/null \
+             | grep temperature        \
+             | awk '{ sub("K","",$3); print $3 }')
+    fi
+
+    print_bulb
+
+    sleep 3
+done
