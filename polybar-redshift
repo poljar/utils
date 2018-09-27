@@ -35,24 +35,15 @@ round() {
     awk '{printf("%d\n", $1 + 0.5)}'
 }
 
-# counter value at which to check temperature
-# seconds between checking temperature
-interval_temperature=20
-
-# (calculated from the intervals above)
-check_temperature="$(printf '%s\n'                                       \
-                        "scale=2; $interval_temperature/$interval_print" \
-                     | bc                                                \
-                     | round)"
-
-state="on"
-
-# XXX: We can't query redshift for its current state, so the only way to ensure
-#      we're tracking the state correctly is to kill any present instances and
-#      start our own.
-pkill -x -9 redshift
-redshift -x
-redshift &
+spawn_redshift() {
+    # XXX: We can't query redshift for its current state, so the only way to ensure
+    #      we're tracking the state correctly is to kill any present instances and
+    #      start our own.
+    pkill -x -9 redshift
+    redshift -x
+    redshift &
+    state="on"
+}
 
 toggle() {
     if [ "$state" = "on" ]; then
@@ -68,8 +59,6 @@ toggle() {
     # Disallow fast toggling to prevent race conditions.
     sleep "$interval_print"
 }
-
-trap toggle USR1
 
 print_bulb() {
     if [ "$state" = "off" ]; then
@@ -91,13 +80,30 @@ print_bulb() {
     fi
 }
 
+# counter value at which to check temperature
+# seconds between checking temperature
+interval_temperature=20
+
+# (calculated from the intervals above)
+check_temperature="$(printf '%s\n'                                       \
+                        "scale=2; $interval_temperature/$interval_print" \
+                     | bc                                                \
+                     | round)"
+
+spawn_redshift
+trap toggle USR1
+
 i=0
 while true; do
-    if [ "$i" -eq "$check_temperature" ] \
-          && pgrep -x redshift 1>/dev/null 2>&1; then
-        temp=$(redshift -p 2>/dev/null \
-             | grep temperature        \
-             | awk '{ sub("K","",$3); print $3 }')
+    if [ "$i" -eq "$check_temperature" ]; then
+        if pgrep -x redshift 1>/dev/null 2>&1; then
+            temp=$(redshift -p 2>/dev/null \
+                | grep temperature         \
+                | awk '{ sub("K","",$3); print $3 }')
+        else
+            # redshift is not running, spawn it
+            spawn_redshift
+        fi
     fi
 
     print_bulb
