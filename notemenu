@@ -23,7 +23,11 @@
 # Ensure your TERMCMD and EDITOR variables are set or directly adjust
 # run_in_term below.
 
-notes_path="$HOME/docs/notes/notes"
+notes_dir="$HOME/docs/notes"
+notes_filename="notes"
+stylesheet_path="$notes_dir/note_stylesheet.css"
+
+notes_path="$notes_dir/$notes_filename"
 
 kb_new_note="Alt+n"
 kb_edit_note="Alt+e"
@@ -223,7 +227,8 @@ while true; do
             note_id="$(note_id_from_choice "$choice")"
             note_file="$(instantiate_note "$note_id")"
             html_file="$(temp_file)"
-            pandoc -f markdown -t html -o "$html_file" "$note_file"
+            pandoc -c "$stylesheet_path" --self-contained -f markdown -t html \
+                   -o "$html_file" "$note_file"
             "$BROWSER" "$html_file"
             rm "$note_file"
 
