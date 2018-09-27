@@ -20,6 +20,10 @@
 # Set notes_path to where your notes are stored and the kb_* to your preferred
 # keyboard shortcuts.
 #
+# Set stylesheet_path to a CSS stylesheet to be included with the generated
+# HTML document. For an example stylesheet, see this gist:
+# https://gist.github.com/ryangray/1882525
+#
 # Ensure your TERMCMD and EDITOR variables are set or directly adjust
 # run_in_term below.
 
