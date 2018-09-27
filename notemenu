@@ -5,7 +5,7 @@
 # Distributed under the ISC licence.
 
 # requires:
-#   * t with multiline entry support <thttps://github.com/dkasak/t>
+#   * t with multiline entry support <https://github.com/dkasak/t>
 #   * note (wrapper for t to make it operate on your notes file)
 #   * xsel (for yanking)
 #   * pandoc (for Markdown to HTML conversion)
