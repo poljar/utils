@@ -27,8 +27,23 @@ color1="#65737E"
 color2="#83a598"
 color3="#EBCB8B"
 color4="#D08770"
+
+interval_print=0.2  # seconds between outputs
 ###
 
+round() {
+    awk '{printf("%d\n", $1 + 0.5)}'
+}
+
+# counter value at which to check temperature
+# seconds between checking temperature
+interval_temperature=20
+
+# (calculated from the intervals above)
+check_temperature="$(printf '%s\n'                                       \
+                        "scale=2; $interval_temperature/$interval_print" \
+                     | bc                                                \
+                     | round)"
 
 state="on"
 
@@ -50,9 +65,8 @@ toggle() {
 
     pkill -x -USR1 redshift
 
-    # XXX: Disallow fast toggling, lest there are any
-    #      race conditions.
-    sleep 1
+    # Disallow fast toggling to prevent race conditions.
+    sleep "$interval_print"
 }
 
 trap toggle USR1
@@ -77,8 +91,10 @@ print_bulb() {
     fi
 }
 
+i=0
 while true; do
-    if pgrep -x redshift; then
+    if [ "$i" -eq "$check_temperature" ] \
+          && pgrep -x redshift 1>/dev/null 2>&1; then
         temp=$(redshift -p 2>/dev/null \
              | grep temperature        \
              | awk '{ sub("K","",$3); print $3 }')
@@ -86,5 +102,6 @@ while true; do
 
     print_bulb
 
-    sleep 3
+    sleep "$interval_print"
+    i=$(( i + 1 ))
 done
