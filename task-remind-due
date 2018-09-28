@@ -9,4 +9,5 @@ export DISPLAY=:1
 
 task \( +DUE and not +OVERDUE \) or +OVERDUE export \
     | jq '.[] | .description' 2>/dev/null           \
-    | xargs -n1 notify-send -t 0 -u low remind
+    | xargs --no-run-if-empty -n1 notify-send -t 0  \
+            -u low remind
