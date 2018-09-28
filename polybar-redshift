@@ -100,6 +100,7 @@ while true; do
             temp=$(redshift -p 2>/dev/null \
                 | grep temperature         \
                 | awk '{ sub("K","",$3); print $3 }')
+            i=0
         else
             # redshift is not running, spawn it
             spawn_redshift
