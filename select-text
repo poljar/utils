@@ -19,7 +19,7 @@ else
     hide_tildes='echo'
 fi
 
-"$EDITOR" -u NORC \
+"$EDITOR" -u NONE \
 +'set laststatus=0 |
   set shortmess=I  |
   set guicursor=a:ver100-blinkon0 |
