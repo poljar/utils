@@ -20,7 +20,8 @@ else
 fi
 
 "$EDITOR" -u NONE \
-+'set laststatus=0 |
++'set nocompatible |
+  set laststatus=0 |
   set shortmess=I  |
   set guicursor=a:ver100-blinkon0 |
   set noruler'             \
