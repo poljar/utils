@@ -1,0 +1,21 @@
+#!/usr/bin/python
+
+import pygments
+import pygments.styles
+import pygments.formatters.terminal256
+import pygments.lexers
+
+for s in pygments.styles.get_all_styles():
+    print(s)
+    print(pygments.highlight("""
+    import math
+
+    a = ['a', 'b', 'c']
+    c = True
+
+    def foo(a):
+        return a + 1
+
+    for i, j in range(3):
+        print(math.sin(i))
+    """, pygments.lexers.Python3Lexer(), pygments.formatters.terminal256.TerminalTrueColorFormatter(style=s)))
