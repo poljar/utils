@@ -8,8 +8,11 @@
 
 # requires python, rofi, xdotool
 #
-# Also requires an emoji definition file which can be found here:
-# https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
+# Also requires an emoji definition file. These are currently supported:
+# 1. https://raw.githubusercontent.com/emojione/emojione/master/emoji.json
+# 2. https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
+#
+# 1 is more complete than 2.
 
 # INSTALL:
 #   1. mkdir -p "$XDG_DATA_HOME"
@@ -38,7 +41,7 @@ default_method = {"method": "paste",
                   "key": "Control+v"}
 
 
-def emoji_menu_item(emoji_def):
+def gemoji_parser(emoji_def):
     category = '{:>10}'.format('|' + emoji_def['category'] + '|')
     emoji = emoji_def['emoji']
     desc = emoji_def['description']
@@ -50,6 +53,40 @@ def emoji_menu_item(emoji_def):
         formatted_tags = ''
 
     return f'{category} {emoji} {desc} {formatted_tags}'
+
+
+def emojione_parser(emoji_def):
+    category = '{:>10}'.format('|' + emoji_def['category'].title() + '|')
+
+    chars = emoji_def['code_points']['base'].split('-')
+    emoji = ''.join(chr(int(c, 16)) for c in chars)
+
+    desc = emoji_def['name']
+
+    if (emoji_def['keywords']
+            and emoji_def['keywords']
+            and emoji_def['keywords'][0]):
+        tags = (tag for tag in emoji_def['keywords'] if tag != desc)
+        formatted_tags = '[' + ', '.join(tags) + ']'
+    else:
+        formatted_tags = ''
+
+    return f'{category} {emoji} {desc} {formatted_tags}'
+
+
+def sort_by_category(emoji):
+    category = emoji['category'].title()
+    order = ["People",
+             "Nature",
+             "Food",
+             "Objects",
+             "Activity",
+             "Regional",
+             "Symbols",
+             "Travel",
+             "Flags",
+             "Modifier"]
+    return order.index(category)
 
 
 def focused_window_classes():
@@ -78,11 +115,20 @@ if not xdg_data_home:
 
 emoji_file = os.path.join(xdg_data_home, 'emoji.json')
 
-# load emoji definitions
+# load emoji data
 emojis = json.load(open(emoji_file))
-emoji_menu_items = [emoji_menu_item(e) for e in emojis
-                    if 'description' in e
-                    if 'emoji' in e]
+
+# pick appropriate parser and load emoji definitions
+if 'description' in next(iter(emojis)):
+    emoji_menu_item = gemoji_parser
+    emoji_menu_items = [emoji_menu_item(e) for e in emojis
+                        if 'description' in e
+                        if 'emoji' in e]
+else:
+    emoji_menu_item = emojione_parser
+    emojis = sorted((v for k, v in emojis.items() if len(k) > 4),
+                    key=sort_by_category)
+    emoji_menu_items = [emoji_menu_item(e) for e in emojis]
 
 # display menu
 rofi_cmd = ['rofi', '-sync', '-dmenu', '-i', '-lines', '10', '-p', 'emoji']
