@@ -58,7 +58,7 @@ def gemoji_parser(emoji_def):
 def emojione_parser(emoji_def):
     category = '{:>10}'.format('|' + emoji_def['category'].title() + '|')
 
-    chars = emoji_def['code_points']['base'].split('-')
+    chars = emoji_def['code_points']['fully_qualified'].split('-')
     emoji = ''.join(chr(int(c, 16)) for c in chars)
 
     desc = emoji_def['name']
