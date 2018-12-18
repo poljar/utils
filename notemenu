@@ -64,8 +64,7 @@ delete: $kb_delete_note"
 
 # Runs a command in a new terminal
 run_in_term() {
-    # "$TERMCMD" -e "$@"
-    /usr/bin/kitty -e "$@"
+    "$TERMCMD" -e "$@"
 }
 
 # Spawn the EDITOR in a new terminal
