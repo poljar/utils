@@ -1,0 +1,73 @@
+#!/bin/sh --
+# logmenu - Summon a list of personal logs, allowing you to open one for
+# editing.
+
+# Copyright (c) 2018 Denis Kasak
+# Distributed under the ISC licence.
+
+# requires rofi
+#
+# Configuration:
+#
+# Create $XDG_CONFIG_HOME/logmenu.conf with the format:
+#
+#   log_name1:log_path1
+#   log_name2:log_path2
+#   .
+#   .
+#   .
+#
+# Ensure your TERMCMD and EDITOR variables are set or directly adjust
+# run_in_term below.
+
+getlogs() {
+    awk -F: '{ printf "%-15s %s\n","["$1"]",$2 }' <"$XDG_CONFIG_HOME/logmenu.conf"
+}
+
+# Runs a command in a new terminal
+run_in_term() {
+    title="$1"
+    shift
+    "$TERMCMD" --name "$title" -e "$@"
+}
+
+# Spawn the EDITOR in a new terminal
+edit_with_window_name() {
+    title="$1"
+    shift
+    run_in_term "$title" "$EDITOR" "$@"
+}
+
+menu() {
+    rofi -dmenu -i -lines 20 -p "logmenu"
+}
+
+get_file() {
+    awk '{ print $2 }' <<EOF
+$(printf '%s\n' "$@")
+EOF
+}
+
+while [[ "$1" == -* ]]; do
+    case "$1" in
+        -p|--print)
+            # just print the choice, don't spawn the editor
+            print_only="true"
+            ;;
+    esac
+    shift
+done
+
+choice=$(getlogs | menu)
+action="$?"
+
+if [[ "$action" == 1 ]]; then
+    # nothing was chosen
+    exit 0
+else
+    if [[ -n "$print_only" ]]; then
+        printf '%s\n' "$choice"
+    else
+        edit_with_window_name "$(get_file "$choice")"
+    fi
+fi
