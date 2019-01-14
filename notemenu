@@ -1,7 +1,7 @@
 #!/bin/sh --
-# notemenu - Browse my t notes
+# notemenu - A personal notes system
 #
-# Copyright (c) 2018 Denis Kasak
+# Copyright (c) 2018, 2019 Denis Kasak
 # Distributed under the ISC licence.
 
 # requires:
