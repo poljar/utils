@@ -9,6 +9,7 @@
 #   * note (wrapper for t to make it operate on your notes file)
 #   * xsel (for yanking)
 #   * pandoc (for Markdown to HTML conversion)
+#   * a (xe)latex installation (for Markdown to PDF conversion)
 #
 # Example note wrapper:
 #
@@ -24,8 +25,13 @@
 # HTML document. For an example stylesheet, see this gist:
 # https://gist.github.com/ryangray/1882525
 #
+# Change value of PDFREADER below, if desired.
+#
 # Ensure your TERMCMD and EDITOR variables are set or directly adjust
 # run_in_term below.
+
+### CONFIGURATION
+PDFREADER="zathura"
 
 notes_dir="$HOME/docs/notes"
 notes_filename="notes"
@@ -37,11 +43,13 @@ kb_new_note="Alt+n"
 kb_edit_note="Alt+e"
 kb_yank_note="Alt+y"
 kb_yank_append_note="Alt+Y"
-kb_html_note="Alt+p"
+kb_html_note="Alt+h"
+kb_pdf_note="Alt+p"
 kb_delete_note="Alt+x"
 kb_open_url="Alt+g"
 kb_yank_url="Alt+u"
 kb_yank_id="Alt+i"
+###
 
 # return codes; equal to X+9 if -kb-custom-X and 0 if enter
 action_show_note=0         # enter
@@ -50,10 +58,11 @@ action_edit_note=11        # custom-2
 action_yank_note=12        # custom-3
 action_yank_append_note=13 # custom-4
 action_html_note=14        # custom-5
-action_delete_note=15      # custom-6
-action_open_url=16         # custom-7
-action_yank_url=17         # custom-8
-action_yank_id=18          # custom-9
+action_pdf_note=15         # custom-6
+action_delete_note=16      # custom-7
+action_open_url=17         # custom-8
+action_yank_url=18         # custom-9
+action_yank_id=19          # custom-10
 
 help_mesg="new: $kb_new_note | \
 edit: $kb_edit_note | \
@@ -63,6 +72,7 @@ open url: $kb_open_url | \
 yank url: $kb_yank_url | \
 yank id: $kb_yank_id | \
 html: $kb_html_note | \
+pdf: $kb_pdf_note | \
 delete: $kb_delete_note"
 
 # Runs a command in a new terminal
@@ -84,6 +94,7 @@ menu() {
          -kb-custom-"$(( action_yank_note - 9 ))" "$kb_yank_note"               \
          -kb-custom-"$(( action_yank_append_note - 9 ))" "$kb_yank_append_note" \
          -kb-custom-"$(( action_html_note - 9 ))" "$kb_html_note"               \
+         -kb-custom-"$(( action_pdf_note - 9 ))" "$kb_pdf_note"                 \
          -kb-custom-"$(( action_delete_note - 9 ))" "$kb_delete_note"           \
          -kb-custom-"$(( action_open_url - 9 ))" "$kb_open_url"                 \
          -kb-custom-"$(( action_yank_url - 9 ))" "$kb_yank_url"                 \
@@ -244,6 +255,16 @@ while true; do
             "$BROWSER" "$html_file"
             rm "$note_file"
 
+            exit 0
+            ;;
+        "$action_pdf_note")
+            note_id="$(note_id_from_choice "$choice")"
+            note_file="$(instantiate_note "$note_id")"
+            pdf_file="$(temp_file).pdf"
+            pandoc -f markdown -t latex \
+                   --pdf-engine=xelatex -o "$pdf_file" "$note_file"
+            "$PDFREADER" "$pdf_file"
+            rm "$note_file"
             exit 0
             ;;
         "$action_delete_note")
