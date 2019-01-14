@@ -9,6 +9,7 @@
 #   * note (wrapper for t to make it operate on your notes file)
 #   * xsel (for yanking)
 #   * pandoc (for Markdown to HTML conversion)
+#   * mario (for opening URLs) <https://github.com/poljar/mario>
 #   * a (xe)latex installation (for Markdown to PDF conversion)
 #
 # Example note wrapper:
