@@ -179,7 +179,7 @@ show_note() {
 
 get_url() {
     local note_id="$1"
-    show_note "$note_id" | grep -Po "(?<=<)https?://.*(?=>)" \
+    show_note "$note_id" | grep -Po "(?<=[\(<])https?://.*(?=(\)>))" \
                          | tail -n 1                         \
                          | tr -d '\n'
 }
