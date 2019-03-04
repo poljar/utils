@@ -151,7 +151,8 @@ instantiate_note() {
 }
 
 temp_file() {
-    mktemp -t notemenu.XXXXXXXXXX.md
+    [ -n "$1" ] && optional_ext=".$1"
+    mktemp -t notemenu.XXXXXXXXXX"${optional_ext}"
 }
 
 show_note() {
@@ -193,7 +194,7 @@ while true; do
             exit 1
             ;;
         "$action_new_note")
-            note_file="$(temp_file)"
+            note_file="$(temp_file md)"
             spawn_editor "$note_file"
 
             if [ -s "$note_file" ]; then
@@ -217,7 +218,7 @@ while true; do
 
             if [ -n "$note_id" ]; then
                 note_file="$(instantiate_note "$note_id")"
-                hash_file="$(temp_file)"
+                hash_file="$(temp_file md)"
                 sha256sum "$note_file" >"$hash_file"
                 spawn_editor "$note_file"
 
@@ -250,7 +251,7 @@ while true; do
         "$action_html_note")
             note_id="$(note_id_from_choice "$choice")"
             note_file="$(instantiate_note "$note_id")"
-            html_file="$(temp_file)"
+            html_file="$(temp_file html)"
             pandoc -c "$stylesheet_path" --self-contained -f markdown -t html \
                    -o "$html_file" "$note_file"
             "$BROWSER" "$html_file"
