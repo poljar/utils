@@ -17,5 +17,6 @@ document_file_backup="$document_file.old"
 
 pgrep -a "$document_reader" | \
 while read -r _ _ docpath; do
-    printf "%s\\n" "$docpath" >> "$document_file"
+    printf "%s\\n" "$docpath" | \
+        awk '/-- .*/ { gsub("-- ", ""); print $0 }' >> "$document_file"
 done
