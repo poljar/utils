@@ -161,7 +161,8 @@ elif paste_method['method'] == 'paste':
                                               encoding="utf-8")
     # tell the program to paste
     subprocess.call(['xdotool', 'windowfocus', '--sync', target_window,
-                     'key', paste_method['key']])
+                     'key', paste_method['key'],
+                     'sleep', '0.05'])
 
     # restore the clipboard
     subprocess.check_output(["xsel", "-i", flag],
