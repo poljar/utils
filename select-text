@@ -1,6 +1,7 @@
 #!/bin/sh
-# Starts a minimalistic (n)vim displaying stdin, for keyboard text selection.
 
+# Starts a minimalistic (n)vim displaying stdin, for keyboard text
+# selection.
 if [ "$EDITOR" != "nvim" ] && [ "$EDITOR" != "vim" ]; then
     if type nvim; then
         EDITOR="nvim"
@@ -12,7 +13,8 @@ if [ "$EDITOR" != "nvim" ] && [ "$EDITOR" != "vim" ]; then
     fi
 fi
 
-# Hide tildes in nvim since it has support for it, but do nothing for vim
+# Hide tildes in nvim since it has support for it, but do nothing
+# for vim
 if [ "$EDITOR" = "nvim" ]; then
     hide_tildes='set fcs=eob:\ '
 else
