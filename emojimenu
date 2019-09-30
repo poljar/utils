@@ -109,6 +109,10 @@ def determine_method(classes):
     return default_method
 
 
+def active_window() -> bytes:
+    return subprocess.check_output(['xdotool', 'getactivewindow']).strip(b'\n')
+
+
 xdg_data_home = os.getenv('XDG_DATA_HOME')
 if not xdg_data_home:
     xdg_data_home = os.path.join(os.getenv('HOME'), '.local', 'share')
@@ -142,6 +146,7 @@ selection = selection.rstrip()
 emoji = selection.split('|')[2].strip().split()[0]
 
 paste_method = determine_method(focused_window_classes())
+target_window = active_window()
 
 if paste_method['method'] == 'type':
     # type the emoji
@@ -154,9 +159,9 @@ elif paste_method['method'] == 'paste':
     saved_clipboard = subprocess.check_output(['xsel', '-io', flag],
                                               input=emoji,
                                               encoding="utf-8")
-
     # tell the program to paste
-    subprocess.call(['xdotool', 'key', paste_method['key']])
+    subprocess.call(['xdotool', 'windowfocus', '--sync', target_window,
+                     'key', paste_method['key']])
 
     # restore the clipboard
     subprocess.check_output(["xsel", "-i", flag],
